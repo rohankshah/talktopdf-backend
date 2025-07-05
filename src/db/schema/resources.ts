@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { text, varchar, timestamp, pgTable } from 'drizzle-orm/pg-core'
+import { createSelectSchema } from 'drizzle-zod'
 import { nanoid } from 'nanoid'
 
 export const resources = pgTable('resources', {
@@ -13,4 +14,10 @@ export const resources = pgTable('resources', {
 	updatedAt: timestamp('updated_at')
 		.notNull()
 		.default(sql`now()`),
+})
+
+export const insertResourceSchema = createSelectSchema(resources).omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
 })

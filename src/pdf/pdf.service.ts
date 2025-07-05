@@ -1,5 +1,10 @@
 import express from 'express'
 import { extractTextFromPDFBuffer } from './pdfFile.service'
+import { createEmbedding } from '../ai/embedding.service'
+import { insertResourceSchema, resources } from '../db/schema/resources'
+import { embeddings as embeddingsTable } from '../db/schema/embeddings'
+import { db } from '..'
+// import { db } from '..'
 
 export const embedPdf = async (req: express.Request, res: express.Response) => {
 	const pdfFile = req.file
@@ -18,9 +23,34 @@ export const embedPdf = async (req: express.Request, res: express.Response) => {
 	// Chunk by max token (overlapping characters to preserve meaning)
 	const chunks = chunkTextBySentences(extractedText)
 
-	// Create embeddings
+	// Store resource in database
+	const { content } = insertResourceSchema.parse({ content: extractedText })
+	const [resource] = await db.insert(resources).values({ content }).returning()
 
-	// Store in database
+	// Create embeddings
+	const embeddings = await createEmbedding(chunks)
+
+	if (!embeddings) {
+		res.status(500).json({
+			error: 'Internal Server Error',
+			message: 'Embeddings couldnt be generated',
+		})
+		return
+	}
+
+	// Store embeddings in database
+	await db.insert(embeddingsTable).values(
+		embeddings.map((embedding, i) => {
+			if (!embedding?.values) {
+				throw new Error(`Missing embedding at index ${i}`)
+			}
+			return {
+				resourceId: resource.id,
+				content: chunks[i],
+				embedding: embedding.values,
+			}
+		})
+	)
 
 	res.status(400).json({
 		success: true,
@@ -29,7 +59,7 @@ export const embedPdf = async (req: express.Request, res: express.Response) => {
 }
 
 function chunkTextBySentences(text: string, maxLength = 3000, overlap = 200) {
-	const sentences = text.match(/[^.!?]+[.!?]+/g) || [text] // fallback if no punctuation
+	const sentences = text.match(/[^.!?]+[.!?]+/g) || [text]
 	const chunks = []
 
 	let chunk = ''
