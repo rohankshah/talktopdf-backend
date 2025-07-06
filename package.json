@@ -14,6 +14,7 @@
 	"license": "ISC",
 	"description": "",
 	"devDependencies": {
+		"@eslint/js": "^9.30.1",
 		"@types/cors": "^2.8.19",
 		"@types/express": "^5.0.3",
 		"@types/multer": "^2.0.0",
@@ -21,10 +22,13 @@
 		"@types/pdf-parse": "^1.1.5",
 		"@types/pg": "^8.15.4",
 		"drizzle-kit": "^0.31.4",
+		"eslint": "^9.30.1",
+		"globals": "^16.3.0",
 		"prettier": "^3.6.2",
 		"ts-node": "^10.9.2",
 		"tsx": "^4.20.3",
-		"typescript": "^5.8.3"
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.35.1"
 	},
 	"dependencies": {
 		"@google/genai": "^1.8.0",
@@ -33,6 +37,7 @@
 		"drizzle-orm": "^0.44.2",
 		"drizzle-zod": "^0.8.2",
 		"express": "^5.1.0",
+		"groq-sdk": "^0.26.0",
 		"multer": "^2.0.1",
 		"nanoid": "^3.3.11",
 		"pdfreader": "^3.0.7",

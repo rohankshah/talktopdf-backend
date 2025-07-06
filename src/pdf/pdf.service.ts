@@ -6,13 +6,13 @@ import { embeddings as embeddingsTable } from '../db/schema/embeddings'
 import { db } from '..'
 // import { db } from '..'
 
-export const embedPdf = async (req: express.Request, res: express.Response) => {
+async function embedPdf (req: express.Request, res: express.Response) {
 	const pdfFile = req.file
 	const pdfBuffer = pdfFile?.buffer
 
 	if (!pdfBuffer) {
 		res.status(400).json({
-			error: 'BadRequest',
+			error: 'Bad Request',
 			message: 'PDF file is missing or invalid',
 		})
 		return
@@ -77,3 +77,5 @@ function chunkTextBySentences(text: string, maxLength = 3000, overlap = 200) {
 
 	return chunks
 }
+
+export {embedPdf}
