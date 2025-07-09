@@ -4,9 +4,8 @@ import { createEmbedding } from '../ai/embedding.service'
 import { insertResourceSchema, resources } from '../db/schema/resources'
 import { embeddings as embeddingsTable } from '../db/schema/embeddings'
 import { db } from '..'
-// import { db } from '..'
 
-async function embedPdf (req: express.Request, res: express.Response) {
+async function embedPdf(req: express.Request, res: express.Response) {
 	const pdfFile = req.file
 	const pdfBuffer = pdfFile?.buffer
 
@@ -52,7 +51,7 @@ async function embedPdf (req: express.Request, res: express.Response) {
 		})
 	)
 
-	res.status(400).json({
+	res.status(200).json({
 		success: true,
 		message: 'Embedded successfully',
 	})
@@ -78,4 +77,4 @@ function chunkTextBySentences(text: string, maxLength = 3000, overlap = 200) {
 	return chunks
 }
 
-export {embedPdf}
+export { embedPdf }
