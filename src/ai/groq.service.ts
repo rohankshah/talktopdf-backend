@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk'
+import { MessageType } from '../lib/types'
 
 const client = new Groq({
 	apiKey: process.env.GROQ_API_KEY,
@@ -13,10 +14,11 @@ Format your responses for readability. Where appropriate, use bullet points, num
 If the user asks for summaries, definitions, comparisons, or explanations, generate concise and helpful replies using only the provided content.
 `
 
-async function getLlmResponse(query: string, context: string) {
+async function getLlmResponse(query: string, context: string, previousMessages: MessageType[]) {
 	const chatCompletion: Groq.Chat.ChatCompletion = await client.chat.completions.create({
 		messages: [
 			{ role: 'system', content: initialPrompt },
+			...previousMessages,
 			{ role: 'user', content: `${context} Query: ${query}` },
 		],
 		model: 'llama3-8b-8192',

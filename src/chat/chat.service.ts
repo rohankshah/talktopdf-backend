@@ -6,7 +6,9 @@ import { db } from '..'
 import { getLlmResponse } from '../ai/groq.service'
 
 async function handleQuery(req: express.Request, res: express.Response) {
-	const userQuery = req.body.query
+	const allMessages = req.body
+	const userQuery = allMessages[allMessages.length - 1]?.content
+	const previousMessages = allMessages.slice(0, -1)
 
 	// Convert query to embedding
 	const userQueryEmbeddedArr = await createEmbedding([userQuery])
@@ -27,12 +29,12 @@ async function handleQuery(req: express.Request, res: express.Response) {
 	// Send embedding to llm
 	const retrievedContext = similarEmbeddings?.map(embedding => embedding?.name)?.join('\n') || ''
 
-	const llmResponse = await getLlmResponse(userQuery, retrievedContext)
+	const llmResponse = await getLlmResponse(userQuery, retrievedContext, previousMessages)
 	const llmAnswer = llmResponse?.choices?.[0]?.message
 
 	// TODO: Stream response
 
-	res.status(400).json({
+	res.status(200).json({
 		success: true,
 		message: llmAnswer,
 	})
