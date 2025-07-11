@@ -6,7 +6,12 @@ import { db } from '..'
 import { getLlmResponse } from '../ai/groq.service'
 
 async function handleQuery(req: express.Request, res: express.Response) {
-	const userQuery = req.body.query
+	const allMessages = req.body
+	const userQuery = allMessages[allMessages.length - 1]?.content
+	const previousMessages = allMessages.slice(0, -1)
+
+	res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+	res.setHeader('Transfer-Encoding', 'chunked')
 
 	// Convert query to embedding
 	const userQueryEmbeddedArr = await createEmbedding([userQuery])
@@ -27,15 +32,17 @@ async function handleQuery(req: express.Request, res: express.Response) {
 	// Send embedding to llm
 	const retrievedContext = similarEmbeddings?.map(embedding => embedding?.name)?.join('\n') || ''
 
-	const llmResponse = await getLlmResponse(userQuery, retrievedContext)
-	const llmAnswer = llmResponse?.choices?.[0]?.message
+	const llmResponse = await getLlmResponse(userQuery, retrievedContext, previousMessages)
 
-	// TODO: Stream response
+	// Stream response
+	for await (const chunk of llmResponse) {
+		const content = chunk.choices?.[0]?.delta?.content
+		if (content) {
+			res.write(content)
+		}
+	}
 
-	res.status(400).json({
-		success: true,
-		message: llmAnswer,
-	})
+	res.end()
 }
 
 async function getSimilarEmbeddings(userQueryEmbedded: number[]) {
