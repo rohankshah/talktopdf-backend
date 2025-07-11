@@ -1,5 +1,6 @@
 import Groq from 'groq-sdk'
 import { MessageType } from '../lib/types'
+import { Stream } from 'groq-sdk/lib/streaming'
 
 const client = new Groq({
 	apiKey: process.env.GROQ_API_KEY,
@@ -15,13 +16,14 @@ If the user asks for summaries, definitions, comparisons, or explanations, gener
 `
 
 async function getLlmResponse(query: string, context: string, previousMessages: MessageType[]) {
-	const chatCompletion: Groq.Chat.ChatCompletion = await client.chat.completions.create({
+	const chatCompletion: Stream<Groq.Chat.Completions.ChatCompletionChunk> = await client.chat.completions.create({
 		messages: [
 			{ role: 'system', content: initialPrompt },
 			...previousMessages,
 			{ role: 'user', content: `${context} Query: ${query}` },
 		],
 		model: 'llama3-8b-8192',
+		stream: true
 	})
 
 	return chatCompletion
